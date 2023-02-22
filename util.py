@@ -31,3 +31,11 @@ def sample_frames_from_video(vid_loc, frame_loc, N):
         
         success, image = vidcap.read()
         i += 1
+
+
+def generate_sample_frames(num_frames):
+    sample_frames_from_video('data/cam1/intrinsics.avi', 'data/cam1/frames/', num_frames)
+    sample_frames_from_video('data/cam2/intrinsics.avi', 'data/cam2/frames/', num_frames)
+    sample_frames_from_video('data/cam3/intrinsics.avi', 'data/cam3/frames/', num_frames)
+    sample_frames_from_video('data/cam4/intrinsics.avi', 'data/cam4/frames/', num_frames)
+
