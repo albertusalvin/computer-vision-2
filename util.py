@@ -50,3 +50,14 @@ def generate_frames_for_extrinsics():
     sample_frames_from_video('data/cam2/checkerboard.avi', 'data/cam2/frames_ex/', 1)
     sample_frames_from_video('data/cam3/checkerboard.avi', 'data/cam3/frames_ex/', 1)
     sample_frames_from_video('data/cam4/checkerboard.avi', 'data/cam4/frames_ex/', 1)
+
+
+def draw_axes(img, corners, imgpts):
+    '''Project three dimensional axes onto the img and draw a line for each axis.'''
+
+    corner = tuple(corners[0].ravel().astype(int))
+    # bright yellow (69,233,255)
+    img = cv.line(img, corner, tuple(imgpts[0].ravel().astype(int)), (0,0,255), 5)
+    img = cv.line(img, corner, tuple(imgpts[1].ravel().astype(int)), (0,255,0), 5)
+    img = cv.line(img, corner, tuple(imgpts[2].ravel().astype(int)), (255,0,0), 5)
+    return img
