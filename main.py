@@ -76,17 +76,20 @@ if __name__ == '__main__':
         img = cv.resize(img, dim, interpolation=cv.INTER_AREA)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-        # Make sure 4 corners get selected
-        print("PLEASE CLICK ON THE FOUR INNER CORNERS IN THIS ORDER: TopLeft, TopRight, BottomLeft, BottomRight")
-        clicker = CoordinateClicker(img)
-        while len(clicker.coordinates) < 4:
-            cv.imshow('img', img)
-            cv.setMouseCallback('img', clicker.click_event)
-            cv.waitKey(50)
-        
-        # linear interpolation
-        corners = interpolate(clicker.coordinates, board_width, board_height)
-        # corners = transform_perspective(clicker.coordinates, board_width, board_height, square_size)
+        ret, corners = cv.findChessboardCorners(gray, (board_width, board_height), None)
+
+        if not ret:
+            # Find corners manually
+            print("PLEASE CLICK ON THE FOUR INNER CORNERS IN THIS ORDER: TopLeft, TopRight, BottomLeft, BottomRight")
+            clicker = CoordinateClicker(img)
+            while len(clicker.coordinates) < 4:
+                cv.imshow('img', img)
+                cv.setMouseCallback('img', clicker.click_event)
+                cv.waitKey(50)
+            
+            # linear interpolation
+            corners = interpolate(clicker.coordinates, board_width, board_height)
+
         corners2 = cv.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
         ret, rvecs, tvecs = cv.solvePnP(objp, corners2, mtx, dist)
 
