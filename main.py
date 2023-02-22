@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
         # EXTRINSIS
         img = cv.imread(cam['exs'])
-        dim = (int(img.shape[1] * 300 / 100), int(img.shape[0] * 300 / 100))
+        dim = (int(img.shape[1] * img_scale / 100), int(img.shape[0] * img_scale / 100))
         img = cv.resize(img, dim, interpolation=cv.INTER_AREA)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
