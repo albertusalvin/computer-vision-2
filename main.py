@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 import glob
 
-from util import generate_sample_frames, get_checkerboard_config
+import util
 
 
 def calibrate_camera(images, img_scale, board_dim, criteria):
@@ -46,13 +46,14 @@ if __name__ == '__main__':
     np.random.seed(10)
     num_frames = 10
     img_scale = 80
-    board_width, board_height, square_size = get_checkerboard_config()
+    board_width, board_height, square_size = util.get_checkerboard_config()
 
     # Termination criteria
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     # Take sample frames from videos
-    generate_sample_frames(num_frames)
+    util.generate_frames_for_intrinsics(num_frames)
+    util.generate_frames_for_extrinsics()
 
     calibrate_camera(glob.glob('data/cam1/frames/*.jpg'), img_scale, (board_width, board_height), criteria)
     calibrate_camera(glob.glob('data/cam2/frames/*.jpg'), img_scale, (board_width, board_height), criteria)
