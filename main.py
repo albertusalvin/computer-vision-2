@@ -95,7 +95,7 @@ if __name__ == '__main__':
         cv.drawChessboardCorners(img, (board_width, board_height), corners2, True)
 
         # project 3D points to image plane and draw axis
-        axis = np.float32([[4,0,0], [0,4,0], [0,0,-4]]).reshape(-1,3)
+        axis = np.float32([[4,0,0], [0,4,0], [0,0,4]]).reshape(-1,3)
         imgpts, jac = cv.projectPoints(axis, rvecs, tvecs, mtx, dist)
         img = util.draw_axes(img, corners2, imgpts)      
 
