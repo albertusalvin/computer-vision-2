@@ -96,7 +96,6 @@ if __name__ == '__main__':
         # VISUALIZATION
         # mark the chessboard corners
         cv.drawChessboardCorners(img, (board_width, board_height), corners2, True)
-
         # project 3D points to image plane and draw axis
         axis = np.float32([[4,0,0], [0,4,0], [0,0,4]]).reshape(-1,3)
         imgpts, jac = cv.projectPoints(axis, rvecs, tvecs, mtx, dist)
@@ -104,5 +103,8 @@ if __name__ == '__main__':
 
         cv.imshow('img',img)
         cv.waitKey(5000)
+
+        # SAVE PARAMS
+        util.save_camera_config(mtx, dist, rvecs, tvecs)
 
     cv.destroyAllWindows()
