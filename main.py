@@ -53,8 +53,10 @@ if __name__ == '__main__':
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001) # Termination criteria
 
     # Take sample frames from videos
-    util.generate_frames_for_intrinsics(num_frames)
-    util.generate_frames_for_extrinsics()
+    # WARN: only need to run this part once
+    # util.generate_frames_for_intrinsics(num_frames)
+    # util.generate_frames_for_extrinsics()
+    # util.generate_frames_for_background()
 
     cams = [
         {'ins': 'data/cam1/frames_in/*.jpg', 'exs': 'data/cam1/frames_ex/frame.jpg'},

@@ -103,6 +103,13 @@ def generate_frames_for_extrinsics():
     sample_frames_from_video('data/cam4/checkerboard.avi', 'data/cam4/frames_ex/', 1)
 
 
+def generate_frames_for_background():
+    sample_frames_from_video('data/cam1/background.avi', 'data/cam1/frames_bg/', 1)
+    sample_frames_from_video('data/cam2/background.avi', 'data/cam2/frames_bg/', 1)
+    sample_frames_from_video('data/cam3/background.avi', 'data/cam3/frames_bg/', 1)
+    sample_frames_from_video('data/cam4/background.avi', 'data/cam4/frames_bg/', 1)
+
+
 def draw_axes(img, corners, imgpts):
     '''Project three dimensional axes onto the img and draw a line for each axis.'''
 
