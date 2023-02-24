@@ -57,6 +57,7 @@ if __name__ == '__main__':
     # util.generate_frames_for_intrinsics(num_frames)
     # util.generate_frames_for_extrinsics()
     # util.generate_frames_for_background()
+    # util.generate_frames_for_foreground()
 
     cams = [
         {'ins': 'data/cam1/frames_in/*.jpg', 'exs': 'data/cam1/frames_ex/frame.jpg'},

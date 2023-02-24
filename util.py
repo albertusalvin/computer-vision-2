@@ -109,6 +109,12 @@ def generate_frames_for_background():
     sample_frames_from_video('data/cam3/background.avi', 'data/cam3/frames_bg/', 1)
     sample_frames_from_video('data/cam4/background.avi', 'data/cam4/frames_bg/', 1)
 
+def generate_frames_for_foreground():
+    sample_frames_from_video('data/cam1/video.avi', 'data/cam1/frames_fg/', 1)
+    sample_frames_from_video('data/cam2/video.avi', 'data/cam2/frames_fg/', 1)
+    sample_frames_from_video('data/cam3/video.avi', 'data/cam3/frames_fg/', 1)
+    sample_frames_from_video('data/cam4/video.avi', 'data/cam4/frames_fg/', 1)
+
 
 def draw_axes(img, corners, imgpts):
     '''Project three dimensional axes onto the img and draw a line for each axis.'''
