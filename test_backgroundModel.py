@@ -2,7 +2,34 @@ import numpy as np
 import cv2 as cv
 
 
-def create_background_model(bg_video):
+def bg_model_gaussian(bg_video):
+    '''Create model of background frame from bg_video by calculating the Gaussian distribution
+    of each channel of the pixels.'''
+
+    frames = []
+    vidcap = cv.VideoCapture(bg_video)
+    success, frame = vidcap.read()
+
+    while success:
+        frames.append(frame)
+        success, frame = vidcap.read()
+    
+    frames = np.array(frames)
+
+    # Array of pixel values distribution. For each channel, compute the mean and std-dev.
+    # shape[1] = width, shape[2] = height, shape[3] = num channels, 2 = mean and std-dev
+    bg_dist = np.zeros((frames.shape[1], frames.shape[2], frames.shape[3], 2))
+
+    for row in range(frames.shape[1]):
+        for col in range(frames.shape[2]):
+            for channel in range(frames.shape[3]):
+                bg_dist[row][col][channel][0] = np.mean(frames[:, row, col, channel])
+                bg_dist[row][col][channel][1] = np.std(frames[:, row, col, channel])
+
+    return bg_dist
+
+
+def bg_model_simple_average(bg_video):
     '''Create model of background frame by averaging frames from bg_video.'''
 
     vidcap = cv.VideoCapture(bg_video)
