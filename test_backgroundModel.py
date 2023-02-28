@@ -17,18 +17,26 @@ def substract_background(bg_video, fg_video):
             if not success:
                 break
 
-            mask = backsub.apply(frame, learningRate=0)            
+            # Comparing the frame against the background frame (in this case, the first frame)
+            mask = backsub.apply(frame, learningRate=0)
+
+            # Frame, minus the masked out area
+            new_frame = cv.bitwise_and(frame, frame, mask=mask)
+
+            # Apply "opening" operation to the mask. It is erosion (removing the noise) followed by dilation (emphasizing the content)
             kernel = np.ones((5,5), np.uint8)
             opening = cv.morphologyEx(mask, cv.MORPH_OPEN, kernel, iterations=1)
-            new_frame = cv.bitwise_and(frame, frame, mask=mask)
+            
+            # Find the contours (the shape boundary) in the mask
             contours, _ = cv.findContours(opening, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
             
-            # drawing rectangles around the contours
+            # Draw rectangles around the found contours. Not on the mask opening frame, but on the corresponding original frame.
             for contour in contours:
                 if cv.contourArea(contour) > 1000:
                     (x, y, w, h) = cv.boundingRect(contour)
                     cv.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
 
+            # Display the results
             mask = cv.cvtColor(mask, cv.COLOR_GRAY2BGR)
             opening = cv.cvtColor(opening, cv.COLOR_GRAY2BGR)
             hstacked_frames = np.hstack((frame, new_frame))
@@ -39,7 +47,6 @@ def substract_background(bg_video, fg_video):
                 break
         
         vidcap.release()
-    
     cv.destroyAllWindows()
 
 
