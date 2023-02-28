@@ -42,8 +42,8 @@ def calibrate_camera(objp, images, img_scale, board_dim, criteria):
 
 if __name__ == '__main__':
     np.random.seed(10)
-    num_frames = 10
-    img_scale = 80
+    num_frames = 50
+    img_scale = 300
     board_width, board_height, square_size = util.get_checkerboard_config()
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
