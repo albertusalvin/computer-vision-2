@@ -19,7 +19,7 @@ def get_checkerboard_config():
     return width, height, square_size
 
 
-def save_camera_config(mtx, dist, rvecs, tvecs):
+def save_camera_config(mtx, dist, rvecs, tvecs, filename):
     mtx_str = f"\n{'{:.5f}'.format(mtx[0][0])} {'{:.5f}'.format(mtx[0][1])} {'{:.5f}'.format(mtx[0][2])}\n"\
             f"{'{:.5f}'.format(mtx[1][0])} {'{:.5f}'.format(mtx[1][1])} {'{:.5f}'.format(mtx[1][2])}\n"\
             f"{'{:.5f}'.format(mtx[2][0])} {'{:.5f}'.format(mtx[2][1])} {'{:.5f}'.format(mtx[2][2])}"
@@ -65,7 +65,7 @@ def save_camera_config(mtx, dist, rvecs, tvecs):
 
     tree = ET.ElementTree(root)
     ET.indent(tree, space='    ', level=0)
-    tree.write('camconfig.xml', encoding='utf-8')
+    tree.write(filename, encoding='utf-8')
 
 
 def sample_frames_from_video(vid_loc, frame_loc, N):

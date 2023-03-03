@@ -123,7 +123,7 @@ if __name__ == '__main__':
         {'ins': 'data/cam4/frames_in/*.jpg', 'exs': 'data/cam4/frames_ex/frame.jpg'},
     ]
 
-    for cam in cams:
+    for cam_idx, cam in enumerate(cams):
         print('======= PROCESSING CAMERA =======')
 
         # INTRINSICS
@@ -165,6 +165,6 @@ if __name__ == '__main__':
         cv.waitKey(5000)
 
         # SAVE PARAMS
-        util.save_camera_config(mtx, dist, rvecs, tvecs)
+        util.save_camera_config(mtx, dist, rvecs, tvecs, f'data/cam{cam_idx + 1}/config.xml')
 
     cv.destroyAllWindows()
