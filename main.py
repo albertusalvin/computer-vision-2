@@ -40,10 +40,67 @@ def calibrate_camera(objp, images, img_scale, board_dim, criteria):
 
 
 
+
+def substract_background(bg_video, fg_video):
+    backsub = cv.createBackgroundSubtractorMOG2(history=5000, varThreshold=36, detectShadows=True)
+
+    for vid in [bg_video, fg_video]:
+        vidcap = cv.VideoCapture(vid)
+
+        while True:
+            success, frame = vidcap.read()
+
+            if not success:
+                break
+
+            # Comparing the frame against the background frame (in this case, the first frame)
+            mask = backsub.apply(frame, learningRate=0.00)
+
+            # Frame, minus the masked out area
+            new_frame = cv.bitwise_and(frame, frame, mask=mask)
+
+            # Apply "opening" operation to the mask. 
+            # It is erosion (removing the noise) followed by dilation (emphasizing the content).
+            kernel = cv.getStructuringElement(cv.MORPH_RECT, (5,5))
+            opening = cv.morphologyEx(mask, cv.MORPH_ERODE, kernel, iterations=1)
+            opening[opening < 200] = 0      # Remove shadows
+
+            # Find the contours (the shape boundary) in the mask
+            contours, _ = cv.findContours(opening, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+            # Turn to grayscale and remove shadows
+            mask = cv.cvtColor(mask, cv.COLOR_GRAY2BGR)
+            opening = cv.cvtColor(opening, cv.COLOR_GRAY2BGR)
+            new_frame[mask < 200] = 0
+            mask[mask < 200] = 0
+            opening[opening < 200] = 0       
+            #mask = cv.threshold(mask, thresh=200, maxval=255, type=cv.THRESH_BINARY)
+            #opening = cv.threshold(opening, thresh=200, maxval=255, type=cv.THRESH_BINARY)
+
+            # Draw rectangles around the found contours. Not on the mask opening frame, but on the corresponding original frame.
+            for contour in contours:
+                if cv.contourArea(contour) > 1000:
+                    (x, y, w, h) = cv.boundingRect(contour)
+                    cv.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
+
+            # Display the results
+            hstacked_frames = np.hstack((frame, new_frame))
+            hstacked_frames1 = np.hstack((mask, opening))
+            vstacked_frames = np.vstack((hstacked_frames, hstacked_frames1))
+            cv.imshow('Frame, new frame, mask, opening operation', vstacked_frames)
+            if cv.waitKey(30) == ord("q"): 
+                break
+        
+        vidcap.release()
+    cv.destroyAllWindows()
+
+
+
+
 if __name__ == '__main__':
     np.random.seed(10)
-    num_frames = 50
-    img_scale = 300
+    num_frames = 10
+    img_scale = 80
     board_width, board_height, square_size = util.get_checkerboard_config()
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
@@ -53,8 +110,11 @@ if __name__ == '__main__':
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001) # Termination criteria
 
     # Take sample frames from videos
-    util.generate_frames_for_intrinsics(num_frames)
-    util.generate_frames_for_extrinsics()
+    # WARN: only need to run this part once
+    # util.generate_frames_for_intrinsics(num_frames)
+    # util.generate_frames_for_extrinsics()
+    # util.generate_frames_for_background()
+    # util.generate_frames_for_foreground()
 
     cams = [
         {'ins': 'data/cam1/frames_in/*.jpg', 'exs': 'data/cam1/frames_ex/frame.jpg'},
@@ -63,7 +123,7 @@ if __name__ == '__main__':
         {'ins': 'data/cam4/frames_in/*.jpg', 'exs': 'data/cam4/frames_ex/frame.jpg'},
     ]
 
-    for cam in cams:
+    for cam_idx, cam in enumerate(cams):
         print('======= PROCESSING CAMERA =======')
 
         # INTRINSICS
@@ -105,6 +165,6 @@ if __name__ == '__main__':
         cv.waitKey(5000)
 
         # SAVE PARAMS
-        util.save_camera_config(mtx, dist, rvecs, tvecs)
+        util.save_camera_config(mtx, dist, rvecs, tvecs, f'data/cam{cam_idx + 1}/config.xml')
 
     cv.destroyAllWindows()
