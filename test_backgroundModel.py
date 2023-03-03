@@ -23,12 +23,11 @@ def substract_background(bg_video, fg_video):
             # Frame, minus the masked out area
             new_frame = cv.bitwise_and(frame, frame, mask=mask)
 
-            # Apply "opening" operation to the mask. It is erosion (removing the noise) followed by dilation (emphasizing the content)
-            kernel = cv.getStructuringElement(cv.MORPH_RECT, (5,5)) #np.ones((5,5), np.uint8)
+            # Apply "opening" operation to the mask. 
+            # It is erosion (removing the noise) followed by dilation (emphasizing the content).
+            kernel = cv.getStructuringElement(cv.MORPH_RECT, (5,5))
             opening = cv.morphologyEx(mask, cv.MORPH_ERODE, kernel, iterations=1)
-
-            opening[opening < 200] = 0       
-
+            opening[opening < 200] = 0      # Remove shadows
 
             # Find the contours (the shape boundary) in the mask
             contours, _ = cv.findContours(opening, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -39,6 +38,9 @@ def substract_background(bg_video, fg_video):
             new_frame[mask < 200] = 0
             mask[mask < 200] = 0
             opening[opening < 200] = 0       
+            #mask = cv.threshold(mask, thresh=200, maxval=255, type=cv.THRESH_BINARY)
+            #opening = cv.threshold(opening, thresh=200, maxval=255, type=cv.THRESH_BINARY)
+
             # Draw rectangles around the found contours. Not on the mask opening frame, but on the corresponding original frame.
             for contour in contours:
                 if cv.contourArea(contour) > 1000:
@@ -46,9 +48,6 @@ def substract_background(bg_video, fg_video):
                     cv.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
 
             # Display the results
-
-            #mask = cv.threshold(mask, thresh=200, maxval=255, type=cv.THRESH_BINARY)
-            #opening = cv.threshold(opening, thresh=200, maxval=255, type=cv.THRESH_BINARY)
             hstacked_frames = np.hstack((frame, new_frame))
             hstacked_frames1 = np.hstack((mask, opening))
             vstacked_frames = np.vstack((hstacked_frames, hstacked_frames1))
