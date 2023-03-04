@@ -4,6 +4,59 @@ from bs4 import BeautifulSoup
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
 
+def get_camera_rotation_matrix(cam):
+    K, dist_coeffs, rvec, tvec = get_camera_config(cam)
+    # Compute the rotation matrix from the rotation vector using the Rodrigues formula
+    R, _ = cv.Rodrigues(rvec)
+
+    # Construct the extrinsic matrix using the rotation and translation vectors
+    T_mat = np.eye(4)
+    T_mat[:3, :3] = R
+    T_mat[:3, 3] = tvec.reshape(3)
+
+    # Compute the camera matrix with the extrinsic matrix and intrinsic matrix
+    K_ext = np.dot(K, T_mat[:3, :])
+
+    # # Compute the projection matrix using the camera matrix and distortion coefficients
+    # P_mat = np.dot(K_ext, np.hstack([R, tvec.reshape(3, 1)]))
+    # P_mat = np.dot(P_mat, np.hstack([np.eye(3), np.zeros((3, 1))]))
+
+    # The rotation matrix is the upper-left 3x3 submatrix of the extrinsic matrix
+    R_mat = np.eye(4)
+    R_mat[:3, :3] = T_mat[:3, :3]
+    return R_mat
+
+def get_camera_config(cam):
+    '''Read the config from for a camera
+    '''
+    with open('computervision2/data/cam%s/config.xml' % cam, 'r') as f:
+        data = f.read()
+
+    soup = BeautifulSoup(data, 'xml')
+    camera_matrix = convert_xml_to_matrix(soup, "CameraMatrix")
+    distortion_coeffs = convert_xml_to_matrix(soup, "DistortionCoeffs")
+    rotation_vector = convert_xml_to_matrix(soup, "RotationVector")
+    translation_vector = convert_xml_to_matrix(soup, "TranslationVector")
+    return camera_matrix, distortion_coeffs, rotation_vector, translation_vector
+
+def convert_xml_to_matrix(soup, name):
+    # Find the camera matrix element in the XML file
+    cam_matrix = soup.find(name)
+
+    # Extract the rows and columns from the XML file
+    rows = int(cam_matrix.find('rows').string)
+    cols = int(cam_matrix.find('cols').string)
+
+    # Create NumPy matrix with the correct dimensions
+    matrix = np.zeros((rows, cols))
+
+    # Extract the matrix values from the XML file
+    values = cam_matrix.find('data').string.split()
+    print(values)
+    for i, value in enumerate(values):
+        matrix[i // cols, i % cols] = float(value)
+
+    return matrix
 
 def get_checkerboard_config():
     '''Read the checkerboard's dimensions and tile size from data/checkerboard.xml.
@@ -19,7 +72,7 @@ def get_checkerboard_config():
     return width, height, square_size
 
 
-def save_camera_config(mtx, dist, rvecs, tvecs):
+def save_camera_config(mtx, dist, rvecs, tvecs, cam):
     mtx_str = f"\n{'{:.5f}'.format(mtx[0][0])} {'{:.5f}'.format(mtx[0][1])} {'{:.5f}'.format(mtx[0][2])}\n"\
             f"{'{:.5f}'.format(mtx[1][0])} {'{:.5f}'.format(mtx[1][1])} {'{:.5f}'.format(mtx[1][2])}\n"\
             f"{'{:.5f}'.format(mtx[2][0])} {'{:.5f}'.format(mtx[2][1])} {'{:.5f}'.format(mtx[2][2])}"
@@ -65,7 +118,7 @@ def save_camera_config(mtx, dist, rvecs, tvecs):
 
     tree = ET.ElementTree(root)
     ET.indent(tree, space='    ', level=0)
-    tree.write('camconfig.xml', encoding='utf-8')
+    tree.write('data/cam%s/config.xml' % cam, encoding='utf-8')
 
 
 def sample_frames_from_video(vid_loc, frame_loc, N):

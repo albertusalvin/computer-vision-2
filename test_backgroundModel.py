@@ -24,8 +24,8 @@ def substract_background(bg_video, fg_video):
             new_frame = cv.bitwise_and(frame, frame, mask=mask)
 
             # Apply "opening" operation to the mask. It is erosion (removing the noise) followed by dilation (emphasizing the content)
-            kernel = cv.getStructuringElement(cv.MORPH_RECT, (5,5)) #np.ones((5,5), np.uint8)
-            opening = cv.morphologyEx(mask, cv.MORPH_ERODE, kernel, iterations=1)
+            kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3,3)) #np.ones((5,5), np.uint8)
+            opening = cv.morphologyEx(mask, cv.MORPH_OPEN, kernel, iterations=1)
 
             opening[opening < 200] = 0       
 
