@@ -24,17 +24,17 @@
         <cols>1</cols>
         <dt>f</dt>
         <data>
-1.33510
-1.02529
--1.07098</data>
+1.31522
+0.99742
+-1.09582</data>
     </RotationVector>
     <TranslationVector type_id="opencv-matrix">
         <rows>3</rows>
         <cols>1</cols>
         <dt>f</dt>
         <data>
--7.60634
-11.03177
-27.56693</data>
+-7.51050
+11.21455
+27.20379</data>
     </TranslationVector>
 </opencv_storage>

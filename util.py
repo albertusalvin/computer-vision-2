@@ -5,37 +5,69 @@ import xml.etree.cElementTree as ET
 from xml.dom import minidom
 from computervision2.test_backgroundModel import substract_background
 
-def create_lookup(width, height, depth):
-    all_voxel = []
+total_translation_dict = {}
+removed_pre = set()
+
+def create_lookup(all_voxel):
     all_translation = {}
+    k = 1
+    tot_removed = set()
+    for cam in range(1,5):
+        removed = set()
+        K, dist_coeffs, rvec, tvec = get_camera_config(cam)
+        points_2d, _ = cv.projectPoints(all_voxel, rvec, tvec, K, dist_coeffs)
+        points_2d = np.round(points_2d).astype(np.int32)
+        translation = {}
+
+        for i, point in enumerate(points_2d):
+            key = (point[0][0], point[0][1])
+            if point[0][0] > 486 or point[0][1] > 644 or point[0][0] < 0 or point[0][1] < 0:
+                removed.add(key)
+            if key not in translation:
+                translation[key] = []
+            translation[key].append(i)
+        if tot_removed == {}:
+            tot_removed = removed
+        else:
+            tot_removed = tot_removed.intersection(removed)
+        all_translation[cam] = translation
+    return tot_removed, all_translation
+
+def get_voxels(width, height, depth):
+    global total_translation_dict
+    global removed_pre
+    all_voxel = []
     for w in range(width):
         for h in range(height):
             for d in range(depth):
-                all_voxel.append(w,h,d)
+                all_voxel.append([w - width/2, h, d - depth/2])
     
-    for cam in range(1,5):
-        projected = point_projection(cam, all_voxel)
-        zipped = zip(all_voxel, projected)
-        translation = {}
-        for zip in zipped:
-            if zip[0] in translation:
-                translation[zip[0]].append(zip[1])
-            else:
-                translation[zip[0]] = [zip[1]]
-        all_translation[cam] = translation
-
-def get_voxels():
-    voxels = []
+    all_voxel = np.asarray(all_voxel, dtype=np.float32)
+    if total_translation_dict == {}:
+        removed_pre, total_translation_dict = create_lookup(all_voxel)
+    removed = list(removed_pre)
     for i in range(1,5):
+        print(i)
         opening = substract_background(f'computervision2/data/cam{i}/background.avi', f'computervision2/data/cam{i}/video.avi')
-        print(opening)
+        print(len(opening), len(opening[0]))
+        print(len(total_translation_dict[i]))
         # Get indices of non-zero values in opening
-        indices = np.transpose(np.nonzero(opening))
-
-        # Convert indices to list of (row, column) tuples
-        voxels += [(row, col) for (row, col) in indices]
-        #voxels += point_projection(i, points)
-    return voxels
+        # indices = []
+        count = 0
+        for x in range(len(opening)):
+            for y in range(len(opening[0])):
+                if opening[x][y] == 0:
+                    count += 1
+                    key = (x,y)
+                    if key in total_translation_dict[i]:
+                        removed += total_translation_dict[i][key]
+        print(count)
+        # print(indices)
+        # # actual_ix= [idx for idx in indices if idx in total_translation_dict[i]]
+        # removed += [spot for idx in indices if idx in total_translation_dict[i] for spot in total_translation_dict[i][idx]]
+    print(len(all_voxel), len(removed))
+    all_voxel = np.delete(all_voxel, removed, axis=0)
+    return all_voxel
 
 def point_projection(cam, points):
     K, dist_coeffs, rvec, tvec = get_camera_config(cam)
@@ -215,3 +247,7 @@ def draw_axes(img, corners, imgpts):
     img = cv.line(img, corner, tuple(imgpts[1].ravel().astype(int)), (0,255,0), 5)
     img = cv.line(img, corner, tuple(imgpts[2].ravel().astype(int)), (255,0,0), 5)
     return img
+
+
+if __name__ == "__main__":
+    create_lookup(128, 64, 128)

@@ -28,7 +28,8 @@ def substract_background(bg_video, fg_video):
             opening = cv.morphologyEx(mask, cv.MORPH_OPEN, kernel, iterations=1)
 
             opening[opening < 200] = 0       
-
+            if idx == 1:
+                return opening
 
             # Find the contours (the shape boundary) in the mask
             # contours, _ = cv.findContours(opening, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -39,8 +40,7 @@ def substract_background(bg_video, fg_video):
             new_frame[mask < 200] = 0
             mask[mask < 200] = 0
             opening[opening < 200] = 0
-            if idx == 1:
-                return opening
+
 
             # Draw rectangles around the found contours. Not on the mask opening frame, but on the corresponding original frame.
             # for contour in contours:
