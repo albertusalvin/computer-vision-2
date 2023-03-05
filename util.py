@@ -3,6 +3,44 @@ import cv2 as cv
 from bs4 import BeautifulSoup
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
+from computervision2.test_backgroundModel import substract_background
+
+def create_lookup(width, height, depth):
+    all_voxel = []
+    all_translation = {}
+    for w in range(width):
+        for h in range(height):
+            for d in range(depth):
+                all_voxel.append(w,h,d)
+    
+    for cam in range(1,5):
+        projected = point_projection(cam, all_voxel)
+        zipped = zip(all_voxel, projected)
+        translation = {}
+        for zip in zipped:
+            if zip[0] in translation:
+                translation[zip[0]].append(zip[1])
+            else:
+                translation[zip[0]] = [zip[1]]
+        all_translation[cam] = translation
+
+def get_voxels():
+    voxels = []
+    for i in range(1,5):
+        opening = substract_background(f'computervision2/data/cam{i}/background.avi', f'computervision2/data/cam{i}/video.avi')
+        print(opening)
+        # Get indices of non-zero values in opening
+        indices = np.transpose(np.nonzero(opening))
+
+        # Convert indices to list of (row, column) tuples
+        voxels += [(row, col) for (row, col) in indices]
+        #voxels += point_projection(i, points)
+    return voxels
+
+def point_projection(cam, points):
+    K, dist_coeffs, rvec, tvec = get_camera_config(cam)
+    out_points = cv.projectPoints(points, rvec, tvec, K, dist_coeffs)
+    return out_points
 
 def get_camera_rotation_matrix(cam):
     K, dist_coeffs, rvec, tvec = get_camera_config(cam)
@@ -52,7 +90,6 @@ def convert_xml_to_matrix(soup, name):
 
     # Extract the matrix values from the XML file
     values = cam_matrix.find('data').string.split()
-    print(values)
     for i, value in enumerate(values):
         matrix[i // cols, i % cols] = float(value)
 

@@ -8,7 +8,7 @@ from tqdm import tqdm
 def substract_background(bg_video, fg_video):
     backsub = cv.createBackgroundSubtractorMOG2(history=5000, varThreshold=36, detectShadows=True)
 
-    for vid in [bg_video, fg_video]:
+    for idx, vid in enumerate([bg_video, fg_video]):
         vidcap = cv.VideoCapture(vid)
 
         while True:
@@ -31,33 +31,37 @@ def substract_background(bg_video, fg_video):
 
 
             # Find the contours (the shape boundary) in the mask
-            contours, _ = cv.findContours(opening, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+            # contours, _ = cv.findContours(opening, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
             # Turn to grayscale and remove shadows
             mask = cv.cvtColor(mask, cv.COLOR_GRAY2BGR)
             opening = cv.cvtColor(opening, cv.COLOR_GRAY2BGR)
             new_frame[mask < 200] = 0
             mask[mask < 200] = 0
-            opening[opening < 200] = 0       
+            opening[opening < 200] = 0
+            if idx == 1:
+                return opening
+
             # Draw rectangles around the found contours. Not on the mask opening frame, but on the corresponding original frame.
-            for contour in contours:
-                if cv.contourArea(contour) > 1000:
-                    (x, y, w, h) = cv.boundingRect(contour)
-                    cv.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
+            # for contour in contours:
+            #     if cv.contourArea(contour) > 1000:
+            #         (x, y, w, h) = cv.boundingRect(contour)
+            #         cv.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
 
             # Display the results
 
             #mask = cv.threshold(mask, thresh=200, maxval=255, type=cv.THRESH_BINARY)
             #opening = cv.threshold(opening, thresh=200, maxval=255, type=cv.THRESH_BINARY)
-            hstacked_frames = np.hstack((frame, new_frame))
-            hstacked_frames1 = np.hstack((mask, opening))
-            vstacked_frames = np.vstack((hstacked_frames, hstacked_frames1))
-            cv.imshow('Frame, new frame, mask, opening operation', vstacked_frames)
-            if cv.waitKey(30) == ord("q"): 
-                break
+
+    #         hstacked_frames = np.hstack((frame, new_frame))
+    #         hstacked_frames1 = np.hstack((mask, opening))
+    #         vstacked_frames = np.vstack((hstacked_frames, hstacked_frames1))
+    #         cv.imshow('Frame, new frame, mask, opening operation', vstacked_frames)
+    #         if cv.waitKey(30) == ord("q"): 
+    #             break
         
-        vidcap.release()
-    cv.destroyAllWindows()
+    #     vidcap.release()
+    # cv.destroyAllWindows()
 
 
 def background_averaging(bg_video):
